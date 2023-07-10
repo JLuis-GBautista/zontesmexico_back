@@ -37,4 +37,15 @@ export default class UsersGlobalService {
       throw new HttpException('Error de sesion', HttpStatus.NOT_FOUND);
     return usuario;
   }
+
+  async canUserCreateEvents(id: number) {
+    const requiredRoles = ['Propietario', 'Administrador'];
+    const usuario = await this.UsersRepository.findOne({
+      where: { id },
+    });
+    if (usuario) {
+      if (requiredRoles.includes(usuario.tipo_usuario)) return true;
+      else return false;
+    }
+  }
 }

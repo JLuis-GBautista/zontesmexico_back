@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { BlogsModule } from './blogs/blogs.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailsModule } from './emails/emails.module';
 
 @Module({
   imports: [
@@ -26,9 +28,33 @@ import { BlogsModule } from './blogs/blogs.module';
         synchronize: true,
       }),
     }),
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: {
+          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: 587,
+          ignoreTLS: false,
+          secure: true,
+          auth: {
+            clientId:
+              '157965941596-1m8rtefo4b4ld1m31fqlt5uuh7pith5c.apps.googleusercontent.com',
+            clientSecret: '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',
+            type: 'OAUTH2',
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+          secureOptions: 'TLSv1_2_method',
+        },
+        defaults: {
+          from: process.env.EMAIL_USER,
+        },
+      }),
+    }),
     UsersModule,
     EventsModule,
     BlogsModule,
+    EmailsModule,
   ],
 })
 export class AppModule {}

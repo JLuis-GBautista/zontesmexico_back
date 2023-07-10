@@ -14,7 +14,7 @@ export default class Events {
   @Column('varchar', { length: 50, unique: true })
   titulo: string;
 
-  @Column('bytea')
+  @Column('bytea', { nullable: true })
   imagen: Buffer;
 
   @Column('text')
