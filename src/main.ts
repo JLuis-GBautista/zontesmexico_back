@@ -12,10 +12,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  /*   app.enableCors({
-    origin: process.env.ORIGIN,
+  app.enableCors({
+    origin: process.env.ORIGIN2,
     credentials: true,
-  }); */
+  });
   app.use(cookieParser());
   await app.listen(6000);
 }
