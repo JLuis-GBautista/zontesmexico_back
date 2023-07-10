@@ -8,6 +8,7 @@ export default class EventsController {
   async SendForm1y2(@Body() data: any) {
     try {
       return await this.emailsService.SendEmailToFormsTwo(
+        data.from,
         data.to,
         data.subject,
         data.html,

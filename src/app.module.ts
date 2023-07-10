@@ -6,7 +6,34 @@ import { EventsModule } from './events/events.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailsModule } from './emails/emails.module';
+import { google } from 'googleapis';
 
+const OAuth2 = google.auth.OAuth2;
+
+const capturarAccessToken = async () => {
+  try {
+    let accessToken = '';
+    const clientId = process.env.EMAIL_CLIENT_ID;
+    const clientSecret = process.env.EMAIL_CLIENT_SECRET;
+    const refresh_token = process.env.EMAIL_REFRESH_TOKEN;
+    const oauth2Client = new OAuth2(
+      clientId,
+      clientSecret,
+      'https://developers.google.com/oauthplayground',
+    );
+    oauth2Client.setCredentials({
+      refresh_token: refresh_token,
+    });
+    oauth2Client.getAccessToken((err, token) => {
+      if (err) console.log(err);
+      if (token) accessToken = token;
+    });
+    return accessToken;
+  } catch (error) {
+    console.log(error);
+    return '';
+  }
+};
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,25 +56,22 @@ import { EmailsModule } from './emails/emails.module';
       }),
     }),
     MailerModule.forRootAsync({
-      useFactory: () => ({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (ConfigService: ConfigService) => ({
         transport: {
-          service: 'gmail',
           host: 'smtp.gmail.com',
-          port: 587,
+          port: 465,
           ignoreTLS: false,
           secure: true,
           auth: {
-            clientId:
-              '157965941596-1m8rtefo4b4ld1m31fqlt5uuh7pith5c.apps.googleusercontent.com',
-            clientSecret: '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',
-            type: 'OAUTH2',
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD,
+            type: 'OAuth2',
+            user: ConfigService.get<string>('EMAIL_USER'),
+            clientId: ConfigService.get<string>('EMAIL_CLIENT_ID'),
+            clientSecret: ConfigService.get<string>('EMAIL_CLIENT_SECRET'),
+            refreshToken: ConfigService.get<string>('EMAIL_REFRESH_TOKEN'),
+            accessToken: await capturarAccessToken(),
           },
-          secureOptions: 'TLSv1_2_method',
-        },
-        defaults: {
-          from: process.env.EMAIL_USER,
         },
       }),
     }),
